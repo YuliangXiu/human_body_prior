@@ -26,8 +26,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from smplx.lbs import lbs
-# from human_body_prior.body_model.lbs import lbs
+# from smplx.lbs import lbs
+from human_body_prior.body_model.lbs import lbs
 
 
 class BodyModel(nn.Module):
@@ -244,7 +244,7 @@ class BodyModel(nn.Module):
             shape_components = betas
             shapedirs = self.shapedirs
 
-        verts, joints = lbs(betas=shape_components, pose=full_pose, v_template=v_template,
+        verts, joints, A = lbs(betas=shape_components, pose=full_pose, v_template=v_template,
                             shapedirs=shapedirs, posedirs=self.posedirs,
                             J_regressor=self.J_regressor, parents=self.kintree_table[0].long(),
                             lbs_weights=self.weights,
@@ -258,6 +258,10 @@ class BodyModel(nn.Module):
         res['f'] = self.f
         res['betas'] = self.betas
         res['Jtr'] = Jtr  # Todo: ik can be made with vposer
+
+        # save the global rotation matrix
+        res['A'] = A
+        res['weights'] = self.weights
 
         if self.model_type == 'smpl':
             res['pose_body'] = pose_body
